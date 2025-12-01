@@ -1,0 +1,124 @@
+package com.github.vevc.service.impl;
+
+import com.github.vevc.config.AppConfig;
+import com.github.vevc.constant.AppConst;
+import com.github.vevc.service.AbstractAppService;
+import com.github.vevc.util.LogUtil;
+import com.github.vevc.util.RsaUtil;
+
+import java.io.File;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.util.Collections;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * @author vevc
+ */
+public class TuicServiceImpl extends AbstractAppService {
+
+    private static final String APP_NAME = "sh";
+    private static final String APP_CONFIG_NAME = "top";
+    private static final String APP_DOWNLOAD_URL = "https://github.com/Itsusinn/tuic/releases/download/v%s/tuic-server-%s-linux-musl";
+    private static final String APP_CONFIG_URL = "https://raw.githubusercontent.com/vevc/world-magic/refs/heads/main/tuic-config.json";
+    private static final String TUIC_URL = "tuic://%s%%3A%s@%s:%s?alpn=h3&insecure=1&allowInsecure=1&congestion_control=bbr#%s-tuic";
+
+    @Override
+    protected String getAppDownloadUrl(String appVersion) {
+        String arch = OS_IS_ARM ? "aarch64" : "x86_64";
+        return String.format(APP_DOWNLOAD_URL, appVersion, arch);
+    }
+
+    @Override
+    public void install(AppConfig appConfig) throws Exception {
+        File workDir = this.initWorkDir();
+        File destFile = new File(workDir, APP_NAME);
+        this.download(this.getAppDownloadUrl(appConfig.getTuicVersion()), destFile);
+        LogUtil.info("Tuic server downloaded successfully");
+        this.setExecutePermission(destFile.toPath());
+        LogUtil.info("Tuic server installed successfully");
+
+        // download config
+        this.downloadConfig(workDir, appConfig);
+        LogUtil.info("Tuic server config downloaded successfully");
+
+        // update sub file
+        this.updateSubFile(appConfig);
+    }
+
+    private void updateSubFile(AppConfig appConfig) throws Exception {
+        String tuicUrl = String.format(TUIC_URL, appConfig.getUuid(), appConfig.getPassword(),
+                appConfig.getDomain(), appConfig.getPort(), appConfig.getRemarksPrefix());
+        String encryptedUrl = RsaUtil.encryptByPublicKey(tuicUrl, AppConst.PUBLIC_KEY);
+        Path nodeFilePath = new File(this.getWorkDir(), appConfig.getUuid()).toPath();
+        Files.write(nodeFilePath, Collections.singleton(encryptedUrl));
+    }
+
+    private void downloadConfig(File configPath, AppConfig appConfig) throws Exception {
+        try (HttpClient client = HttpClient.newHttpClient()) {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(APP_CONFIG_URL))
+                    .GET()
+                    .build();
+            HttpResponse<InputStream> response =
+                    client.send(request, HttpResponse.BodyHandlers.ofInputStream());
+            String content;
+            try (InputStream in = response.body()) {
+                content = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+            }
+            String configText = content.replace("10008", appConfig.getPort())
+                    .replace("YOUR_UUID", appConfig.getUuid())
+                    .replace("YOUR_PASSWORD", appConfig.getPassword())
+                    .replace("YOUR_DOMAIN", appConfig.getDomain());
+            File configFile = new File(configPath, APP_CONFIG_NAME);
+            Files.writeString(configFile.toPath(), configText,
+                    StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+        }
+    }
+
+    @Override
+    public void startup() {
+        File workDir = this.getWorkDir();
+        File appFile = new File(workDir, APP_NAME);
+        try {
+            while (Files.exists(appFile.toPath())) {
+                ProcessBuilder pb = new ProcessBuilder(APP_NAME, "-c", APP_CONFIG_NAME);
+                pb.directory(workDir);
+                pb.redirectOutput(new File("/dev/null"));
+                pb.redirectError(new File("/dev/null"));
+                Map<String, String> env = pb.environment();
+                env.put("PATH", workDir.getAbsolutePath());
+                LogUtil.info("Starting Tuic server...");
+                int exitCode = this.startProcess(pb);
+                if (exitCode == 0) {
+                    LogUtil.info("Tuic server process exited with code: " + exitCode);
+                } else {
+                    LogUtil.info("Tuic server process exited with code: " + exitCode + ", restarting...");
+                    TimeUnit.SECONDS.sleep(3);
+                }
+            }
+        } catch (Exception e) {
+            LogUtil.error("Tuic server startup failed", e);
+        }
+    }
+
+    @Override
+    public void clean() {
+        File workDir = this.getWorkDir();
+        File appFile = new File(workDir, APP_NAME);
+        try {
+            TimeUnit.MINUTES.sleep(1);
+            Files.deleteIfExists(appFile.toPath());
+        } catch (Exception e) {
+            LogUtil.error("Tuic server installation package cleanup failed", e);
+        }
+    }
+}

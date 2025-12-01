@@ -1,0 +1,4 @@
+name: WorldMagic
+version: '1.0.0'
+main: com.github.vevc.WorldMagicPlugin
+api-version: '1.21'
