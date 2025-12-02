@@ -1,18 +1,13 @@
 package com.github.vevc.config;
 
+import com.github.vevc.constant.AppConst;
+
 import java.util.Properties;
 
 /**
  * @author vevc
  */
 public class AppConfig {
-
-    public static final String DOMAIN = "domain";
-    public static final String PORT = "port";
-    public static final String UUID = "uuid";
-    public static final String PASSWORD = "password";
-    public static final String TUIC_VERSION = "tuic-version";
-    public static final String REMARKS_PREFIX = "remarks-prefix";
 
     private String domain;
     private String port;
@@ -26,12 +21,12 @@ public class AppConfig {
             return null;
         }
         AppConfig cfg = new AppConfig();
-        cfg.setDomain(props.getProperty(DOMAIN, "vevc.github.com"));
-        cfg.setPort(props.getProperty(PORT, "25565"));
-        cfg.setUuid(props.getProperty(UUID, java.util.UUID.randomUUID().toString()));
-        cfg.setPassword(props.getProperty(PASSWORD, java.util.UUID.randomUUID().toString().substring(0, 8)));
-        cfg.setTuicVersion(props.getProperty(TUIC_VERSION, "1.6.5"));
-        cfg.setRemarksPrefix(props.getProperty(REMARKS_PREFIX, "vevc"));
+        cfg.setDomain(props.getProperty(AppConst.DOMAIN));
+        cfg.setPort(props.getProperty(AppConst.PORT));
+        cfg.setUuid(props.getProperty(AppConst.UUID));
+        cfg.setPassword(props.getProperty(AppConst.PASSWORD));
+        cfg.setTuicVersion(props.getProperty(AppConst.TUIC_VERSION));
+        cfg.setRemarksPrefix(props.getProperty(AppConst.REMARKS_PREFIX));
         return cfg;
     }
 

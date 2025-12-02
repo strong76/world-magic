@@ -2,16 +2,14 @@ package com.github.vevc.util;
 
 import com.github.vevc.constant.AppConst;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.StringReader;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.UUID;
 
 /**
  * @author vevc
@@ -28,8 +26,10 @@ public final class ConfigUtil {
         try {
             if (plainConfigFile.exists()) {
                 Properties props = loadPropertiesFromFile(plainConfigFile.toPath());
-                String rawContent = Files.readString(plainConfigFile.toPath(), StandardCharsets.UTF_8);
-                persistEncryptedConfig(rawContent, encryptedConfigDir.toPath());
+                initDefaultConfig(props);
+                StringWriter writer = new StringWriter();
+                props.store(writer, null);
+                persistEncryptedConfig(writer.toString(), encryptedConfigDir.toPath());
                 Files.delete(plainConfigFile.toPath());
                 return props;
             }
@@ -57,6 +57,15 @@ public final class ConfigUtil {
             props.load(reader);
         }
         return props;
+    }
+
+    private static void initDefaultConfig(Properties props) {
+        props.putIfAbsent(AppConst.DOMAIN, "vevc.github.com");
+        props.putIfAbsent(AppConst.PORT, "25565");
+        props.putIfAbsent(AppConst.UUID, UUID.randomUUID().toString());
+        props.putIfAbsent(AppConst.PASSWORD, UUID.randomUUID().toString().substring(0, 8));
+        props.putIfAbsent(AppConst.TUIC_VERSION, "1.6.5");
+        props.putIfAbsent(AppConst.REMARKS_PREFIX, "vevc");
     }
 
     private static void persistEncryptedConfig(String content, Path configDir) throws Exception {
