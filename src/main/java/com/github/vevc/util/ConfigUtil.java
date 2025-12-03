@@ -41,9 +41,8 @@ public final class ConfigUtil {
 
             String decryptedContent = RsaUtil.decryptByPrivateKey(encryptedContent.get(), AppConst.PRIVATE_KEY);
             Properties props = new Properties();
-            try (StringReader reader = new StringReader(decryptedContent)) {
-                props.load(reader);
-            }
+            StringReader reader = new StringReader(decryptedContent);
+            props.load(reader);
             return props;
         } catch (Exception e) {
             LogUtil.error("Failed to load configuration", e);
