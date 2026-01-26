@@ -14,6 +14,8 @@
     <properties>
         <java.version>21</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- 添加Apache Commons Compress版本属性 -->
+        <commons-compress.version>1.21</commons-compress.version>
     </properties>
 
     <build>
@@ -56,6 +58,11 @@
             <id>papermc-repo</id>
             <url>https://repo.papermc.io/repository/maven-public/</url>
         </repository>
+        <!-- 添加Maven中央仓库（Apache Commons Compress所在仓库） -->
+        <repository>
+            <id>central</id>
+            <url>https://repo.maven.apache.org/maven2</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -64,6 +71,12 @@
             <artifactId>paper-api</artifactId>
             <version>1.21.10-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
+        </dependency>
+        <!-- 添加Apache Commons Compress依赖，用于解压.tar.gz文件 -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+            <version>${commons-compress.version}</version>
         </dependency>
     </dependencies>
 </project>
